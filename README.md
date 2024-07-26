@@ -53,6 +53,26 @@ print("QFT execution time:", quantum_time)
 
 ## Definiciones
 
+### Crear un cubit y ver el estado forma local
+
+```python
+from qiskit import QuantumCircuit, transpile, assemble
+from qiskit_aer import AerSimulator
+from qiskit.visualization import plot_histogram
+
+qc = QuantumCircuit(1,1)
+qc.measure(0, 0)
+qc.draw('mpl')
+
+simulator = AerSimulator()
+compiled_circuit = transpile(qc, simulator)
+
+result = simulator.run(compiled_circuit).result()
+
+counts = result.get_counts(compiled_circuit)
+print(counts)
+```
+
 ### Puerta Hadamard (H)
 
 La puerta Hadamard transforma un qubit de un estado base (|0⟩ o |1⟩) a una superposición de ambos estados.
@@ -83,38 +103,6 @@ qc.x(0)  # Aplicar la puerta Pauli-X al qubit 0
 qc.draw('mpl')
 ```
 
-```python
-from qiskit import QuantumCircuit, transpile, assemble
-from qiskit_aer import AerSimulator
-from qiskit.visualization import plot_histogram
-
-# Crear un nuevo circuito cuántico con 1 qubit y 1 bit clásico
-qc = QuantumCircuit(1, 1)
-
-# Aplicar una puerta X para poner el qubit en el estado |1⟩
-qc.x(0)
-
-# Aplicar otra puerta X para revertir el qubit al estado |0⟩
-qc.x(0)
-
-# Medir el qubit y almacenar el resultado en el bit clásico
-qc.measure(0, 0)
-
-# Dibujar el circuito
-qc.draw("mpl")
-
-# Transpilar el circuito para el simulador Aer
-simulator = AerSimulator()
-compiled_circuit = transpile(qc, simulator)
-
-# Ejecutar el circuito en el simulador
-result = simulator.run(compiled_circuit).result()
-
-# Obtener y mostrar los resultados
-counts = result.get_counts(compiled_circuit)
-print(counts)
-```
-
 ### Puerta Pauli-Y (Y)
 
 actúa como una combinación de operaciones de rotación en los ejes X e Y.
@@ -123,4 +111,56 @@ actúa como una combinación de operaciones de rotación en los ejes X e Y.
 qc = QuantumCircuit(1)  # Crear un circuito con un qubit
 qc.y(0)  # Aplicar la puerta Pauli-Y al qubit 0
 qc.draw('mpl')
+```
+
+## Conectar IBM online
+
+- Librerias
+
+```python
+from qiskit import QuantumCircuit, transpile
+from qiskit_ibm_runtime import QiskitRuntimeService, Sampler
+from qiskit.visualization import plot_histogram
+```
+
+- Circuito
+
+```python
+example_circuit = QuantumCircuit(2)
+example_circuit.cx(0, 1)
+example_circuit.measure_all()
+```
+
+- Mandar al backend
+
+```python
+# Seleccionar el backend menos ocupado que no sea un simulador
+backend = service.least_busy(operational=True, simulator=False)
+
+# Transpilar el circuito para el backend seleccionado
+compiled_circuit = transpile(example_circuit, backend)
+
+# Crear un sampler para ejecutar el circuito en el backend seleccionado
+sampler = Sampler(backend)
+
+# Ejecutar el trabajo y obtener el resultado
+job = sampler.run([compiled_circuit])
+print(f"job id: {job.job_id()}")
+
+# Esperar a que el trabajo termine y obtener los resultados
+job_result = job.result()
+print(job_result)
+```
+
+- Obtener los datos para graficar
+
+```python
+counts = job_result[0].data.meas.get_counts()
+print(counts)
+```
+
+- Graficar
+
+```python
+plot_histogram(counts)
 ```
