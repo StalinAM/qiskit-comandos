@@ -4,7 +4,7 @@
 
 - Descargar [Anaconda](https://www.anaconda.com/download)
 - Abrir Anaconda Prompt
-- `conda create --name cwq`
+- `conda create --n cwq python=3`
 - `conda activate cwq`
 - `conda install pip`
 - `pip install qiskit`
